@@ -17,6 +17,9 @@ inputs:
     description: 'Path to build, if not "."'
     default: "."
     required: true
+  token:
+    description: 'GitHub Token for pushing'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -35,17 +38,17 @@ runs:
     - name: Build "tag" argument
       run: |
         words=()
-        tags="${{inputs.tags}}"
+        tags="$1"
         if [ -z "$tags" ]; then
           tags="$GITHUB_SHA"
         fi
-        for t in ${{ tags }}; do
-          words+=("--tag" "ghcr.io/$GITHUB_REPOSITORY/$imageName:$t")
+        for t in $tags; do
+          words+=("--tag" "ghcr.io/$GITHUB_REPOSITORY/${{ env.imageName }}:$t")
         done
         echo "tags=${words[@]}" >> $GITHUB_ENV
       shell: bash
     - name: Login
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username dummy --password-stdin
+      run: echo "${{ inputs.token }}" | docker login ghcr.io --username dummy --password-stdin
       shell: sh
     - name: Build the Docker image
       env:
@@ -57,7 +60,7 @@ runs:
         --label org.opencontainers.image.source="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
         --label org.opencontainers.image.revision="$GITHUB_SHA"
         --label org.opencontainers.image.url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-        $tags
+        ${{ env.tags }}
         --platform=linux/amd64,linux/arm64
         --push
       shell: bash
