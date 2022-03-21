@@ -92,13 +92,13 @@ runs:
           branch="$(echo "$GITHUB_REF" | cut -c 12- | tr '/' '-')"
         fi
         if [[ "${{inputs.auto-tags}}" = *branch-name* ]]; then
-          if [ -n "$branch" ];
+          if [ -n "$branch" ]; then
             words+=("$branch")
           fi
         fi
         shorthash="${GITHUB_SHA:0:7}"
         if [[ "${{inputs.auto-tags}}" = *branch-ref* ]]; then
-          if [ -n "$branch" ];
+          if [ -n "$branch" ]; then
             words+=("$branch-$shorthash")
           fi
         fi
