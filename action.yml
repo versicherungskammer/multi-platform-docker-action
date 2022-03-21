@@ -1,5 +1,5 @@
 name: 'Multi-Platform Docker Build'
-description: 'publish '
+description: 'publish multi-platform images to ghcr.io with default labels'
 inputs:
   image-name:
     description: 'Image name under ghcr.io/$GITHUB_REPOSITORY, if not ${GITHUB_REPOSITORY#*/}'
