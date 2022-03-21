@@ -2,7 +2,8 @@ name: 'Multi-Platform Docker Build'
 description: 'publish '
 inputs:
   image-name:
-    description: 'Image name under ghcr.io/$GITHUB_REPOSITORY'
+    description: 'Image name under ghcr.io/$GITHUB_REPOSITORY, if not ${GITHUB_REPOSITORY#*/}'
+    default: ""
     required: true
   tags:
     description: 'Tag name(s), space-separated, if not $GITHUB_SHA'
@@ -23,6 +24,14 @@ runs:
       uses: docker/setup-qemu-action@v1
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
+    - name: Build "imageName" argument
+      run: |
+        imageName="${{input.image-name}}"
+        if [ -z "$imageName" ]; then
+          imageName="${GITHUB_REPOSITORY#*/}"
+        fi        
+        echo "imageName=${imageName}" >> $GITHUB_ENV
+      shell: bash
     - name: Build "tag" argument
       run: |
         words=()
@@ -31,7 +40,7 @@ runs:
           tags="$GITHUB_SHA"
         fi
         for t in ${{ tags }}; do
-          words+=("--tag" "ghcr.io/$GITHUB_REPOSITORY/${{ inputs.image-name }}:$t")
+          words+=("--tag" "ghcr.io/$GITHUB_REPOSITORY/$imageName:$t")
         done
         echo "tags=${words[@]}" >> $GITHUB_ENV
       shell: bash
