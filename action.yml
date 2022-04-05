@@ -125,7 +125,9 @@ runs:
         echo "tags=${words[@]}" >> $GITHUB_ENV
       shell: bash
     - name: login to ghcr.io
-      run: echo "${{ inputs.token }}" | docker login ghcr.io --username dummy --password-stdin
+      env:
+        TOKEN: ${{ inputs.token }}
+      run: echo "$TOKEN" | docker login ghcr.io --username dummy --password-stdin
       shell: bash
     - name: build the docker image
       env:
