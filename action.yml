@@ -10,7 +10,7 @@ inputs:
     default: ""
     required: false
   auto-tags:
-    description: 'strategies to use for auto-tag-generation. mix "commit-hash", "release-name", "latest-if-release", "branch-name", "short-hash", "branch-ref". default: "commit-hash release-name latest-if-release"'
+    description: 'strategies to use for auto-tag-generation. mix "commit-hash", "release-name", "latest-if-release", "latest-if-main", "branch-name", "short-hash", "branch-ref". default: "commit-hash release-name latest-if-release"'
     default: "commit-hash release-name latest-if-release"
     required: true
   additional-tags:
@@ -69,6 +69,13 @@ runs:
         fi        
         echo "imageName=${imageName}" >> $GITHUB_ENV
       shell: bash
+    - name: validate auto tags input
+      run: |
+        if [[ "${{inputs.auto-tags}}" = *latest-if-release* && "${{inputs.auto-tags}}" = *latest-if-main* ]]; then
+          echo "ERROR: The 'auto-tags' latest-if-release and latest-if-main can only be used alternately"
+          exit 1
+        fi
+      shell: bash
     - name: determine auto-tags
       env:
         GITHUB_RELEASE_TAG: ${{ github.event.release.tag_name }}
@@ -90,6 +97,11 @@ runs:
         branch=
         if [[ "$GITHUB_REF" == "refs/heads/"* ]]; then
           branch="$(echo "$GITHUB_REF" | cut -c 12- | tr '/' '-')"
+        fi
+        if [[ "${{inputs.auto-tags}}" = *latest-if-main* ]]; then
+          if [[ "$branch" = "main" ]]; then
+            words+=("latest")
+          fi
         fi
         if [[ "${{inputs.auto-tags}}" = *branch-name* ]]; then
           if [ -n "$branch" ]; then
