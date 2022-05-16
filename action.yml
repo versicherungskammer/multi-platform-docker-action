@@ -118,7 +118,7 @@ runs:
           words+=("$shorthash")
         fi
         if [[ -n "${{inputs.additional-tags}}" ]]; then
-          for t in ${{inputs.auto-tags}}; do
+          for t in ${{inputs.additional-tags}}; do
             words+=("$t")
           done
         fi
