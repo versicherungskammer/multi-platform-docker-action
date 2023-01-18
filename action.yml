@@ -17,6 +17,10 @@ inputs:
     description: 'Tag name(s), space-separated, to add to auto-tags'
     default: ""
     required: false
+  build-args:
+    description: 'Build args, space-separated, to add to build args. Format: "ARG1=VALUE1 ARG2=VALUE2 ARG3 ARG4" The values for ARG3 and ARG4 will be read from the environment variables ARG3 and ARG4.'
+    default: ""
+    required: false
   docker-file:
     description: 'Path of Dockerfile, if not "Dockerfile"'
     default: Dockerfile
@@ -68,6 +72,16 @@ runs:
           imageName="${GITHUB_REPOSITORY#*/}"
         fi        
         echo "imageName=${imageName}" >> $GITHUB_ENV
+      shell: bash
+    - name: construct build args
+      run: |
+        buildArgs=""
+        if [[ -n "${{inputs.build-args}}" ]]; then
+          for t in ${{inputs.build-args}}; do
+            buildArgs="$buildArgs --build-arg $t"
+          done
+        fi
+        echo "buildArgs=${buildArgs}" >> $GITHUB_ENV
       shell: bash
     - name: validate auto tags input
       run: |
@@ -153,6 +167,7 @@ runs:
         --label org.opencontainers.image.revision="$GITHUB_SHA"
         --label org.opencontainers.image.url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
         ${{ env.tags }}
+        ${{ env.buildArgs }}
         --platform=linux/amd64,linux/arm64
         --push
       shell: bash
