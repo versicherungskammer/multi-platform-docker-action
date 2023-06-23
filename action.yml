@@ -25,6 +25,14 @@ inputs:
     description: 'Path of Dockerfile, if not "Dockerfile"'
     default: Dockerfile
     required: false
+  platform:
+    description: 'List of comma-separated target platforms, defaults to "linux/amd64,linux/arm64"'
+    default: "linux/amd64,linux/arm64"
+    required: false
+  push:
+    description: 'Indicator, if the build image shall be pushed'
+    default: "true"
+    required: false
   path:
     description: 'Path to build, if not "."'
     default: "."
@@ -82,6 +90,19 @@ runs:
           done
         fi
         echo "buildArgs=${buildArgs}" >> $GITHUB_ENV
+      shell: bash
+    - name: construct platform
+      run: |
+        platform="--platform='${{inputs.platform}}'"
+        echo "platform=${platform}" >> $GITHUB_ENV
+      shell: bash
+    - name: construct push
+      run: |
+        push=""
+        if [ "${{inputs.push}}" == "true" -a "${{github.actor}}" != "dependabot" ]; then
+          push="--push"
+        fi
+        echo "push=${push}" >> $GITHUB_ENV
       shell: bash
     - name: validate auto tags input
       run: |
@@ -168,6 +189,6 @@ runs:
         --label org.opencontainers.image.url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
         ${{ env.tags }}
         ${{ env.buildArgs }}
-        --platform=linux/amd64,linux/arm64
-        --push
+        ${{ env.platform }}
+        ${{ env.push }}
       shell: bash
