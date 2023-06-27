@@ -99,7 +99,7 @@ runs:
     - name: construct push
       run: |
         push=""
-        if [ "${{inputs.push}}" == "true" -a "${{github.actor}}" != "dependabot" ]; then
+        if [ "${{inputs.push}}" == "true" -a "${{github.actor}}" != "dependabot[bot]" ]; then
           push="--push"
         fi
         echo "push=${push}" >> $GITHUB_ENV
