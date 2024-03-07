@@ -130,13 +130,13 @@ runs:
           words+=("$GITHUB_SHA")
         fi
         tag=
+        if [[ "$GITHUB_REF" == "refs/tags/"* ]]; then
+          tag="$(echo "$GITHUB_REF" | cut -c 11- | tr '/' '-')"
+        fi
         if [[ "${{inputs.auto-tags}}" = *tag-name* ]]; then
           if [ -n "$tag" ]; then
             words+=("$tag")
           fi
-        fi
-        if [[ "$GITHUB_REF" == "refs/tags/"* ]]; then
-          tag="$(echo "$GITHUB_REF" | cut -c 11- | tr '/' '-')"
         fi
         branch=
         if [[ "$GITHUB_REF" == "refs/heads/"* ]]; then
